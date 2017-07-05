@@ -2,5 +2,14 @@
 !*.*
 *.swp
 *~
-nimcache/
-bin
+nimcache
+
+bin/main
+bin/testall
+bin/temp
+
+tests/nimcache
+tests/nimbleDir
+temp.nim
+
+.xmark.README.md.html

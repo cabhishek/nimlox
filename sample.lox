@@ -1,0 +1,9 @@
+class Math {
+  fun sum(a, b) {
+    return a + b
+  }
+
+  fun mul(a, b) {
+    return a * b
+  }
+}
