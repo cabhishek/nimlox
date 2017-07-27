@@ -4,9 +4,7 @@
 *~
 nimcache
 
-bin/main
-bin/testall
-bin/temp
+bin/*
 
 tests/nimcache
 tests/nimbleDir

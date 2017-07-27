@@ -23,8 +23,7 @@ proc runPrompt() =
 when isMainModule:
   let params: seq[string] = commandLineParams()
   if params.len > 1:
-    display("Usage: lox [script]")
-    quit(1)
+    quit("Usage: lox [script]")
   elif params.len == 1:
     runFile(params[0])
   else:
