@@ -6,27 +6,25 @@ type
   Scanner* = object
     source*: string
     tokens*: seq[Token]
-    start*: int
-    current*: int
-    line*: int
+    start*, current*, line*: int
 
 const
   keywords = {
-    "and": TokenType.AND,
-    "class": TokenType.CLASS,
-    "else": TokenType.ELSE,
-    "false": TokenType.FALSE,
-    "fun": TokenType.FUN,
-    "if": TokenType.IF,
-    "nil": TokenType.NIL,
-    "or": TokenType.OR,
-    "print": TokenType.PRINT,
-    "return": TokenType.RETURN,
-    "super": TokenType.SUPER,
-    "this": TokenType.THIS,
-    "true": TokenType.TRUE,
-    "var": TokenType.VAR,
-    "while": TokenType.WHILE,
+    "and"    : TokenType.AND,
+    "class"  : TokenType.CLASS,
+    "else"   : TokenType.ELSE,
+    "false"  : TokenType.FALSE,
+    "fun"    : TokenType.FUN,
+    "if"     : TokenType.IF,
+    "nil"    : TokenType.NIL,
+    "or"     : TokenType.OR,
+    "print"  : TokenType.PRINT,
+    "return" : TokenType.RETURN,
+    "super"  : TokenType.SUPER,
+    "this"   : TokenType.THIS,
+    "true"   : TokenType.TRUE,
+    "var"    : TokenType.VAR,
+    "while"  : TokenType.WHILE,
   }.toTable
 
 proc isAtEnd(s: Scanner): bool =
@@ -36,7 +34,7 @@ proc isAtEnd(s: Scanner): bool =
 proc advance(s: var Scanner): char {.discardable.} =
   # Returns the current char and moves to the next one
   s.current += 1
-  result = s.source[s.current-1]
+  return s.source[s.current-1]
 
 proc peek(s: var Scanner): char =
   # Returns the current char without moving to the next one
@@ -63,14 +61,36 @@ proc match(s: var Scanner, expected: char): bool =
     # Group current & previous chars into a single tokenType
     s.current += 1
 
-proc addToken(s: var Scanner, tokenType: TokenType, literal: string = "") =
+# Overloaded methods
+proc addToken(s: var Scanner, tokenType: TokenType) =
   # Add token along with metadata
   s.tokens.add(
     Token(
+      line: s.line,
       tokenType: tokenType,
+      lexeme: s.source[s.start..s.current-1]
+    )
+  )
+
+proc addStringToken(s: var Scanner, literal: string) =
+  # Add string token along with metadata
+  s.tokens.add(
+    Token(
+      line: s.line,
+      tokenType: TokenType.STRING,
       lexeme: s.source[s.start..s.current-1],
-      literal: literal,
-      line: s.line
+      strValue: literal
+    )
+  )
+
+proc addFloatToken(s: var Scanner, literal: float) =
+  # Add float token along with metadata
+  s.tokens.add(
+    Token(
+      line: s.line,
+      tokenType: TokenType.NUMBER,
+      lexeme: s.source[s.start..s.current-1],
+      floatValue: literal
     )
   )
 
@@ -82,7 +102,7 @@ proc scanNumber(s: var Scanner) =
     while isDigit(s.peek()): s.advance()
 
   let value = s.source[s.start..s.current-1]
-  s.addToken(TokenType.NUMBER, value)
+  s.addFloatToken(parseFloat(value))
 
 proc scanString(s: var Scanner) =
   while s.peek() != '\"' and not s.isAtEnd():
@@ -96,15 +116,14 @@ proc scanString(s: var Scanner) =
 
   # Trim the surrounding quotes.
   let value = s.source[s.start+1..s.current-2]
-  s.addToken(TokenType.STRING, value)
+  s.addStringToken(value)
 
 proc identifier(s: var Scanner) =
-  while isAlphaNumeric(s.peek()): s.advance()
+  while isAlphaNumeric(s. peek()): s.advance()
   let
     text: string = s.source[s.start..s.current-1]
     tokenType = if keywords.contains(text): keywords[text]
                 else: TokenType.IDENTIFIER
-
   s.addToken(tokenType)
 
 proc scanToken(s: var Scanner) =
@@ -165,13 +184,11 @@ proc scanTokens*(s: var Scanner): seq[Token] =
   # EOF token
   s.tokens.add(
     Token(
+      line: s.line,
       tokenType: TokenType.EOF,
-      lexeme: "",
-      literal: "",
-      line: s.line
+      lexeme: ""
     )
   )
-
   return s.tokens
 
 proc newScanner*(source: string): Scanner =
