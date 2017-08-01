@@ -1,4 +1,4 @@
-import os, strutils, token, errors, utils, tables
+import os, strutils, token, tokenType, errors, utils, tables
 
 type
   # Scanner represents a lexical scanner that does lexical-analysis on the source.

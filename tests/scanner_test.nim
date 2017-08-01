@@ -1,4 +1,4 @@
-import unittest, scanner, token
+import unittest, scanner, token, tokenType
 
 suite "test scanner":
 

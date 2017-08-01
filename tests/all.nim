@@ -1,1 +1,1 @@
-import scanner_test
+import scanner_test, astprinter_test
