@@ -9,7 +9,7 @@ type
     value*: string
 
   Grouping* = ref object of Expression
-    expr*: Expression
+    expression*: Expression
 
   Binary* = ref object of Expression
     left*: Expression
@@ -20,11 +20,13 @@ type
     operator*: Token
     right*: Expression
 
-proc accept*[T](expr: Literal, v: Visitor): T = return v.visitLiteralExpression(expr)
+method accept*[T](expr: Expression, v: Visitor): T = quit("Overide me")
 
-proc accept*[T](expr: Grouping, v: Visitor): T = return v.visitGroupingExpression(expr)
+method accept*[T](expr: Literal, v: Visitor): T = return v.visitLiteralExpression(expr)
 
-proc accept*[T](expr: Binary, v: Visitor): T = return v.visitBinaryExpression(expr)
+method accept*[T](expr: Grouping, v: Visitor): T = return v.visitGroupingExpression(expr)
 
-proc accept*[T](expr: Unary, v: Visitor): T = return v.visitUnaryExpression(expr)
+method accept*[T](expr: Binary, v: Visitor): T = return v.visitBinaryExpression(expr)
+
+method accept*[T](expr: Unary, v: Visitor): T = return v.visitUnaryExpression(expr)
 

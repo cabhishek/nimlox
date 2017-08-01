@@ -5,7 +5,7 @@ from utils import newLine
 const
   typeDesc = "$1* = ref object of $2"
   propDesc = "$1*: $2"
-  methodDesc = "proc accept*[T](expr: $1, v: Visitor): T = return v.visit$1Expression(expr)"
+  methodDesc = "method accept*[T](expr: $1, v: Visitor): T = return v.visit$1Expression(expr)"
 
 proc addImport(content: var string, module: string) =
   content.add("import token")
@@ -33,13 +33,17 @@ proc addMethods(content: var string, types: Table[string, string]) =
     content.add(methodDesc % param)
     content.add(newLine(count=2))
 
+proc addAbstractMethod(content: var string) =
+  content.add("method accept*[T](expr: Expression, v: Visitor): T = quit(\"Overide me\")")
+  content.add(newLine(count=2))
+
 proc generateAst(dirName: string) =
   let outputDir = getCurrentDir() / dirName
   echo "Output directory: $1" % outputDir
   discard existsOrCreateDir(outputDir)
   const types = {
     "Binary"   : "left Expression, operator Token, right Expression",
-    "Grouping" : "expr Expression",
+    "Grouping" : "expression Expression",
     "Literal"  : "value string",
     "Unary"    : "operator Token, right Expression"
   }.toTable
@@ -47,6 +51,7 @@ proc generateAst(dirName: string) =
   var content = ""
   content.addImport("token")
   content.addTypes(types)
+  content.addAbstractMethod()
   content.addMethods(types)
 
   # Finally, write to file
