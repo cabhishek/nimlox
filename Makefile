@@ -8,6 +8,8 @@ sample:
 repl:
 	@nim -r --verbosity:0 c --o:bin/main src/main.nim
 
+test: tests
+
 tests:
 	@nim -r --verbosity:0 c --o:bin/testAll tests/all.nim
 

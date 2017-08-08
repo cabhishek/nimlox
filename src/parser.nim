@@ -1,4 +1,4 @@
-import strutils, token, tokenType, expression, utils, errors
+import strutils, token, tokenType, literalKind, expression, utils, errors
 
 type
   ParserError = ref object of Exception
@@ -6,114 +6,115 @@ type
     current*: int
     tokens*: seq[Token]
 
-proc unary(self: var Parser): Expression # forward declare
+proc unary(p: var Parser): Expression # forward declare
 
-proc error(self: Parser, token: Token, message: string): ParserError =
+proc error(p: Parser, token: Token, message: string): ParserError =
   reportError(token, message)
   return ParserError()
 
-proc previous(self: Parser): Token = self.tokens[self.current - 1]
+proc previous(p: Parser): Token = p.tokens[p.current - 1]
 
-proc peek(self: Parser): Token = self.tokens[self.current]
+proc peek(p: Parser): Token = p.tokens[p.current]
 
-proc isAtEnd(self: Parser): bool = self.peek().tokenType == TokenType.EOF
+proc isAtEnd(p: Parser): bool = p.peek().tokenType == TokenType.EOF
 
-proc advance(self: var Parser): Token {.discardable.} =
-  if not self.isAtEnd(): self.current += 1
-  return self.previous()
+proc advance(p: var Parser): Token {.discardable.} =
+  if not p.isAtEnd(): p.current += 1
+  return p.previous()
 
-proc check(self: Parser, tokenType: TokenType): bool =
-  if self.isAtEnd(): return false
-  return self.peek().tokenType == tokenType
+proc check(p: Parser, tokenType: TokenType): bool =
+  if p.isAtEnd(): return false
+  return p.peek().tokenType == tokenType
 
-proc match(self: var Parser, types: varargs[TokenType]): bool =
+proc match(p: var Parser, types: varargs[TokenType]): bool =
   for tokenType in types:
-    if self.check(tokenType):
-      self.advance()
+    if p.check(tokenType):
+      p.advance()
       return true
   return false
 
-proc multiplication(self: var Parser): Expression =
-  var expr: Expression = self.unary()
-  while self.match(TokenType.SLASH, TokenType.STAR):
+proc multiplication(p: var Parser): Expression =
+  var expr: Expression = p.unary()
+  while p.match(TokenType.SLASH, TokenType.STAR):
     let
-      operator: Token = self.previous()
-      right: Expression = self.unary()
+      operator: Token = p.previous()
+      right: Expression = p.unary()
       expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc addition(self: var Parser): Expression =
-  var expr: Expression = self.multiplication()
-  while self.match(TokenType.MINUS, TokenType.PLUS):
+proc addition(p: var Parser): Expression =
+  var expr: Expression = p.multiplication()
+  while p.match(TokenType.MINUS, TokenType.PLUS):
     let
-      operator: Token = self.previous()
-      right: Expression = self.multiplication()
+      operator: Token = p.previous()
+      right: Expression = p.multiplication()
       expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc comparison(self: var Parser): Expression =
-  var expr: Expression = self.addition()
-  while self.match(TokenType.GREATER,
+proc comparison(p: var Parser): Expression =
+  var expr: Expression = p.addition()
+  while p.match(TokenType.GREATER,
                    TokenType.GREATER_EQUAL,
                    TokenType.LESS,
                    TokenType.LESS_EQUAL):
     let
-      operator: Token = self.previous()
-      right: Expression = self.addition()
+      operator: Token = p.previous()
+      right: Expression = p.addition()
       expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc equality(self: var Parser): Expression =
-  var expr: Expression = self.comparison()
-  while self.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL):
+proc equality(p: var Parser): Expression =
+  var expr: Expression = p.comparison()
+  while p.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL):
     let
-      operator: Token = self.previous()
-      right: Expression = self.comparison()
+      operator: Token = p.previous()
+      right: Expression = p.comparison()
       expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc expression(self: var Parser): Expression = return self.equality()
+proc expression(p: var Parser): Expression = return p.equality()
 
-proc consume(self: var Parser,
+proc consume(p: var Parser,
              tokenType: TokenType,
              message: string): Token {.raises: ParserError.} =
-  if self.check(tokenType): return self.advance()
-  raise self.error(self.peek(), message)
+  if p.check(tokenType): return p.advance()
+  raise p.error(p.peek(), message)
 
-proc primary(self: var Parser): Expression =
-  if self.match(TokenType.FALSE):
-    result = Literal(value: "false")
-  if self.match(TokenType.TRUE):
-    result = Literal(value: "true")
-  if self.match(TokenType.NIL):
-    result = Literal(value: "null")
+proc primary(p: var Parser): Expression =
+  if p.match(TokenType.FALSE):
+    result = Literal(kind: LiteralKind.BOOLEAN, bValue: false)
+  if p.match(TokenType.TRUE):
+    result = Literal(kind: LiteralKind.BOOLEAN, bValue: true)
+  if p.match(TokenType.NIL):
+    # little hack to get around Nim's type system (here string type is set to nil)
+    result = Literal(kind: LiteralKind.NIL, value: nil)
 
-  if self.match(TokenType.NUMBER):
-    result = Literal(value: $self.previous().floatValue)
+  if p.match(TokenType.NUMBER):
+    result = Literal(kind: LiteralKind.NUMBER, fValue: p.previous().fValue)
 
-  if self.match(TokenType.STRING):
-    result = Literal(value: self.previous().strValue)
+  if p.match(TokenType.STRING):
+    result = Literal(kind: LiteralKind.STRING, svalue: p.previous().sValue)
 
-  if self.match(TokenType.LEFT_PAREN):
-    let expr = self.expression()
-    discard self.consume(TokenType.RIGHT_PAREN, "Expected ')' after expression")
+  if p.match(TokenType.LEFT_PAREN):
+    let expr = p.expression()
+    discard p.consume(TokenType.RIGHT_PAREN, "Expected ')' after expression")
     result = Grouping(expression: expr)
 
-proc unary(self: var Parser): Expression =
-  if self.match(TokenType.BANG, TokenType.MINUS):
+proc unary(p: var Parser): Expression =
+  if p.match(TokenType.BANG, TokenType.MINUS):
     let
-      operator: Token = self.previous()
-      right: Expression = self.unary()
+      operator: Token = p.previous()
+      right: Expression = p.unary()
     return Unary(operator: operator, right: right)
-  return self.primary()
+  return p.primary()
 
-proc synchronize(self: var Parser) {.discardable.} =
-  self.advance()
+proc synchronize(p: var Parser) {.discardable.} =
+  p.advance()
 
-  while not self.isAtEnd():
-    if self.previous().tokenType == TokenType.SEMICOLON: return
+  while not p.isAtEnd():
+    if p.previous().tokenType == TokenType.SEMICOLON: return
 
-    case self.peek().tokenType:
+    case p.peek().tokenType:
       of TokenType.CLASS,
          TokenType.FUN,
          TokenType.VAR,
@@ -125,13 +126,13 @@ proc synchronize(self: var Parser) {.discardable.} =
         return
       else: discard
 
-    self.advance()
+    p.advance()
 
-proc parse*(self: var Parser): Expression =
+proc parse*(p: var Parser): Expression =
   try:
-    return self.expression()
+    return p.expression()
   except ParserError:
-      self.synchronize()
+      p.synchronize()
       return nil
 
 proc newParser*(tokens: seq[Token]): Parser =

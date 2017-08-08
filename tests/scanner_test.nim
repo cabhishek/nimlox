@@ -1,4 +1,4 @@
-import unittest, scanner, token, tokenType
+import unittest, scanner, token, tokenKind
 
 suite "test scanner":
 
@@ -6,25 +6,25 @@ suite "test scanner":
     var s = newScanner("\"abc\"")
     let tokens = s.scanTokens()
     check:
-      tokens[0].tokenType == TokenType.STRING
-      tokens[0].strValue == "abc"
+      tokens[0].kind == TokenKind.STRING
+      tokens[0].sValue == "abc"
 
   test "scan number":
     var s = newScanner("123.456")
     let tokens = s.scanTokens()
     check:
-      tokens[0].tokenType == TokenType.NUMBER
+      tokens[0].kind == TokenKind.NUMBER
       tokens[0].lexeme == "123.456"
-      tokens[0].floatValue == 123.456
+      tokens[0].fValue == 123.456
 
   test "scan plus operator":
     var s = newScanner("2+2")
     let tokens = s.scanTokens()
     check:
       tokens.len == 4 # including EOF
-      tokens[0].tokenType == TokenType.NUMBER
-      tokens[0].floatValue == 2
-      tokens[1].tokenType == TokenType.PLUS
+      tokens[0].kind == TokenKind.NUMBER
+      tokens[0].fValue == 2
+      tokens[1].kind == TokenKind.PLUS
       tokens[1].lexeme == "+"
-      tokens[2].tokenType == TokenType.NUMBER
-      tokens[2].floatValue == 2
+      tokens[2].kind == TokenKind.NUMBER
+      tokens[2].fValue == 2

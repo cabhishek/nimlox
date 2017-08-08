@@ -1,4 +1,4 @@
-import os, strutils, token, tokenType, errors, utils, tables
+import os, strutils, token, tokenKind, errors, utils, tables
 
 type
   # Scanner represents a lexical scanner that does lexical-analysis on the source.
@@ -10,186 +10,186 @@ type
 
 const
   keywords = {
-    "and"    : TokenType.AND,
-    "class"  : TokenType.CLASS,
-    "else"   : TokenType.ELSE,
-    "false"  : TokenType.FALSE,
-    "fun"    : TokenType.FUN,
-    "if"     : TokenType.IF,
-    "nil"    : TokenType.NIL,
-    "or"     : TokenType.OR,
-    "print"  : TokenType.PRINT,
-    "return" : TokenType.RETURN,
-    "super"  : TokenType.SUPER,
-    "this"   : TokenType.THIS,
-    "true"   : TokenType.TRUE,
-    "var"    : TokenType.VAR,
-    "while"  : TokenType.WHILE,
+    "and"    : TokenKind.AND,
+    "class"  : TokenKind.CLASS,
+    "else"   : TokenKind.ELSE,
+    "false"  : TokenKind.FALSE,
+    "fun"    : TokenKind.FUN,
+    "if"     : TokenKind.IF,
+    "nil"    : TokenKind.NIL,
+    "or"     : TokenKind.OR,
+    "print"  : TokenKind.PRINT,
+    "return" : TokenKind.RETURN,
+    "super"  : TokenKind.SUPER,
+    "this"   : TokenKind.THIS,
+    "true"   : TokenKind.TRUE,
+    "var"    : TokenKind.VAR,
+    "while"  : TokenKind.WHILE,
   }.toTable
 
-proc isAtEnd(self: Scanner): bool =
+proc isAtEnd(s: Scanner): bool =
   # Check if EOF reached
-  return self.current >= self.source.len
+  return s.current >= s.source.len
 
-proc advance(self: var Scanner): char {.discardable.} =
+proc advance(s: var Scanner): char {.discardable.} =
   # Returns the current char and moves to the next one
-  self.current += 1
-  return self.source[self.current-1]
+  s.current += 1
+  return s.source[s.current-1]
 
-proc peek(self: var Scanner): char =
+proc peek(s: var Scanner): char =
   # Returns the current char without moving to the next one
-  if self.isAtEnd():
+  if s.isAtEnd():
     result = '\0'
   else:
-    result = self.source[self.current]
+    result = s.source[s.current]
 
-proc peekNext(self: var Scanner): char =
+proc peekNext(s: var Scanner): char =
   # Returns the current + 1 char without moving to the next one
-  if self.current + 1 >= self.source.len:
+  if s.current + 1 >= s.source.len:
     result = '\0'
   else:
-    result = self.source[self.current+1]
+    result = s.source[s.current+1]
 
-proc match(self: var Scanner, expected: char): bool =
+proc match(s: var Scanner, expected: char): bool =
   result = true
-  if self.isAtEnd():
+  if s.isAtEnd():
     result = false
-  elif self.source[self.current] != expected:
+  elif s.source[s.current] != expected:
     result = false
   else:
     # Match found and increment position.
-    # Group current & previous chars into a single tokenType
-    self.current += 1
+    # Group current & previous chars into a single tokenKind
+    s.current += 1
 
 # Overloaded methods
-proc addToken(self: var Scanner, tokenType: TokenType) =
+proc addToken(s: var Scanner, kind: TokenKind) =
   # Add token along with metadata
-  self.tokens.add(
+  s.tokens.add(
     Token(
-      line: self.line,
-      tokenType: tokenType,
-      lexeme: self.source[self.start..self.current-1]
+      line: s.line,
+      kind: kind,
+      lexeme: s.source[s.start..s.current-1]
     )
   )
 
-proc addStringToken(self: var Scanner, literal: string) =
+proc addStringToken(s: var Scanner, literal: string) =
   # Add string token along with metadata
-  self.tokens.add(
+  s.tokens.add(
     Token(
-      line: self.line,
-      tokenType: TokenType.STRING,
-      lexeme: self.source[self.start..self.current-1],
-      strValue: literal
+      line: s.line,
+      kind: TokenKind.STRING,
+      lexeme: s.source[s.start..s.current-1],
+      sValue: literal
     )
   )
 
-proc addFloatToken(self: var Scanner, literal: float) =
+proc addFloatToken(s: var Scanner, literal: float) =
   # Add float token along with metadata
-  self.tokens.add(
+  s.tokens.add(
     Token(
-      line: self.line,
-      tokenType: TokenType.NUMBER,
-      lexeme: self.source[self.start..self.current-1],
-      floatValue: literal
+      line: s.line,
+      kind: TokenKind.NUMBER,
+      lexeme: s.source[s.start..s.current-1],
+      fValue: literal
     )
   )
 
-proc scanNumber(self: var Scanner) =
-  while isDigit(self.peek()): self.advance()
+proc scanNumber(s: var Scanner) =
+  while isDigit(s.peek()): s.advance()
 
-  if self.peek() == '.' and isDigit(self.peekNext()):
-    self.advance()
-    while isDigit(self.peek()): self.advance()
+  if s.peek() == '.' and isDigit(s.peekNext()):
+    s.advance()
+    while isDigit(s.peek()): s.advance()
 
-  let value = self.source[self.start..self.current-1]
-  self.addFloatToken(parseFloat(value))
+  let value = s.source[s.start..s.current-1]
+  s.addFloatToken(parseFloat(value))
 
-proc scanString(self: var Scanner) =
-  while self.peek() != '\"' and not self.isAtEnd():
-    if self.peek() == '\L': self.line += 1
-    self.advance()
+proc scanString(s: var Scanner) =
+  while s.peek() != '\"' and not s.isAtEnd():
+    if s.peek() == '\L': s.line += 1
+    s.advance()
 
-  if self.isAtEnd():
-    reportError(self.line, self.source[self.start..self.current], "Unterminated string")
+  if s.isAtEnd():
+    reportError(s.line, s.source[s.start..s.current], "Unterminated string")
 
-  self.advance()
+  s.advance()
 
-  # Trim the surrounding quoteself.
-  let value = self.source[self.start+1..self.current-2]
-  self.addStringToken(value)
+  # Trim the surrounding quotes.
+  let value = s.source[s.start+1..s.current-2]
+  s.addStringToken(value)
 
-proc identifier(self: var Scanner) =
-  while isAlphaNumeric(self. peek()): self.advance()
+proc identifier(s: var Scanner) =
+  while isAlphaNumeric(s. peek()): s.advance()
   let
-    text: string = self.source[self.start..self.current-1]
-    tokenType = if keywords.contains(text): keywords[text]
-                else: TokenType.IDENTIFIER
-  self.addToken(tokenType)
+    text: string = s.source[s.start..s.current-1]
+    tokenKind = if keywords.contains(text): keywords[text]
+                else: TokenKind.IDENTIFIER
+  s.addToken(tokenKind)
 
-proc scanToken(self: var Scanner) =
+proc scanToken(s: var Scanner) =
   # Infers the type of lexical token from its string representation
-  let c: char = self.advance()
+  let c: char = s.advance()
   case c:
     of '(':
-      self.addToken(TokenType.LEFT_PAREN)
+      s.addToken(TokenKind.LEFT_PAREN)
     of ')':
-      self.addToken(TokenType.RIGHT_PAREN)
+      s.addToken(TokenKind.RIGHT_PAREN)
     of '{':
-      self.addToken(TokenType.LEFT_BRACE)
+      s.addToken(TokenKind.LEFT_BRACE)
     of '}':
-      self.addToken(TokenType.RIGHT_BRACE)
+      s.addToken(TokenKind.RIGHT_BRACE)
     of ',':
-      self.addToken(TokenType.COMMA)
+      s.addToken(TokenKind.COMMA)
     of '.':
-      self.addToken(TokenType.DOT)
+      s.addToken(TokenKind.DOT)
     of '-':
-      self.addToken(TokenType.MINUS)
+      s.addToken(TokenKind.MINUS)
     of '+':
-      self.addToken(TokenType.PLUS)
+      s.addToken(TokenKind.PLUS)
     of ';':
-      self.addToken(TokenType.SEMICOLON)
+      s.addToken(TokenKind.SEMICOLON)
     of '*':
-      self.addToken(TokenType.STAR)
+      s.addToken(TokenKind.STAR)
     of '\r', '\t', ' ': # Ignore whitespace
       discard
     of '\L': # New line char '\n'
-      self.line += 1
+      s.line += 1
     of '!':
-      self.addToken(if self.match('='): TokenType.BANG_EQUAL else: TokenType.BANG)
+      s.addToken(if s.match('='): TokenKind.BANG_EQUAL else: TokenKind.BANG)
     of '=':
-      self.addToken(if self.match('='): TokenType.EQUAL_EQUAL else: TokenType.EQUAL)
+      s.addToken(if s.match('='): TokenKind.EQUAL_EQUAL else: TokenKind.EQUAL)
     of '>':
-      self.addToken(if self.match('='): TokenType.GREATER_EQUAL else: TokenType.GREATER)
+      s.addToken(if s.match('='): TokenKind.GREATER_EQUAL else: TokenKind.GREATER)
     of '<':
-      self.addToken(if self.match('='): TokenType.LESS_EQUAL else: TokenType.LESS)
+      s.addToken(if s.match('='): TokenKind.LESS_EQUAL else: TokenKind.LESS)
     of '/':
-      if self.match('/'):
-        while(self.peek() != '\L' and not self.isAtEnd()):
-          self.advance()
-      else: self.addToken(TokenType.SLASH)
-    of '\"': self.scanString()
+      if s.match('/'):
+        while(s.peek() != '\L' and not s.isAtEnd()):
+          s.advance()
+      else: s.addToken(TokenKind.SLASH)
+    of '\"': s.scanString()
     else:
-      if isDigit(c): self.scanNumber()
-      elif utils.isAlpha(c): self.identifier()
+      if isDigit(c): s.scanNumber()
+      elif utils.isAlpha(c): s.identifier()
       else:
-        reportError(self.line, self.source[self.start..self.current], "Unrecognized letter $1" % $c)
+        reportError(s.line, s.source[s.start..s.current], "Unrecognized letter $1" % $c)
 
-proc scanTokens*(self: var Scanner): seq[Token] =
+proc scanTokens*(s: var Scanner): seq[Token] =
   # ScanTokens keeps scanning the source code untils it find the EOF delimiter.
   # It returns a seq of tokens that represents the entire source code.
-  while not self.isAtEnd():
-    self.start = self.current
-    self.scanToken()
+  while not s.isAtEnd():
+    s.start = s.current
+    s.scanToken()
 
   # EOF token
-  self.tokens.add(
+  s.tokens.add(
     Token(
-      line: self.line,
-      tokenType: TokenType.EOF,
+      line: s.line,
+      kind: TokenKind.EOF,
       lexeme: ""
     )
   )
-  return self.tokens
+  return s.tokens
 
 proc newScanner*(source: string): Scanner =
   # Create a new Scanner instance

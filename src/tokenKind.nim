@@ -1,5 +1,5 @@
 type
-  TokenType* = enum
+  TokenKind* = enum
     # Single-character tokens.
     LEFT_PAREN,
     RIGHT_PAREN,
