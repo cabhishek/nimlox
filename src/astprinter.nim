@@ -13,14 +13,13 @@ proc visitBinaryExpression(v: Visitor, expr: Binary): string
 proc visitGroupingExpression(v: Visitor, expr: Grouping): string
 proc visitUnaryExpression(v: Visitor, expr: Unary): string
 
-
 proc strValue(expr: Literal): string =
+  # Stringify literal value
   case expr.kind:
     of LiteralKind.STRING: result = expr.sValue
     of LiteralKind.NUMBER: result = $expr.fValue
     of LiteralKind.BOOLEAN: result = $expr.bValue
-    of LiteralKind.NIL: result = nil
-    else: discard
+    of LiteralKind.NIL: result = "null"
 
 proc parenthesize(v: Visitor, name: string, exprs: varargs[Expression]): string =
   result = ""
@@ -32,7 +31,6 @@ proc parenthesize(v: Visitor, name: string, exprs: varargs[Expression]): string 
   result.add(")")
 
 proc visitLiteralExpression(v: Visitor, expr: Literal): string =
-  #if expr.value.isNilOrEmpty: return "nil"
   return expr.strValue
 
 proc visitBinaryExpression(v: Visitor, expr: Binary): string =

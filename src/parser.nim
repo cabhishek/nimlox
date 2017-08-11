@@ -110,7 +110,6 @@ proc unary(p: var Parser): Expression =
 
 proc synchronize(p: var Parser) {.discardable.} =
   p.advance()
-
   while not p.isAtEnd():
     if p.previous().tokenType == TokenType.SEMICOLON: return
 
@@ -125,7 +124,6 @@ proc synchronize(p: var Parser) {.discardable.} =
          TokenType.RETURN:
         return
       else: discard
-
     p.advance()
 
 proc parse*(p: var Parser): Expression =

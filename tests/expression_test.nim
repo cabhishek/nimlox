@@ -2,7 +2,7 @@ import unittest, expression, token, tokenKind, literalKind
 
 suite "test expression":
 
-  test "literal expression types":
+  test "literal types":
     let sLit = Literal(kind: LiteralKind.STRING, sValue: "abc")
     let fLit = Literal(kind: LiteralKind.NUMBER, fValue: 123.4)
     let bLit = Literal(kind: LiteralKind.BOOLEAN, bValue: true)
