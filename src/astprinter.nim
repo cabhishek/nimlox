@@ -19,7 +19,7 @@ proc strValue(expr: Literal): string =
     of LiteralKind.STRING: result = expr.sValue
     of LiteralKind.NUMBER: result = $expr.fValue
     of LiteralKind.BOOLEAN: result = $expr.bValue
-    of LiteralKind.NIL: result = "null"
+    of LiteralKind.NIL: result = "nil"
 
 proc parenthesize(v: Visitor, name: string, exprs: varargs[Expression]): string =
   result = ""

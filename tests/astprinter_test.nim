@@ -31,7 +31,7 @@ suite "test astprinter":
     let expression = Literal(kind: LiteralKind.NIL, value: nil)
     let printer = AstPrinter()
     check:
-      printer.print(expression) == "null"
+      printer.print(expression) == "nil"
 
   test "unary expression":
     let expression = Unary(

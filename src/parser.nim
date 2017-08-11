@@ -112,7 +112,6 @@ proc synchronize(p: var Parser) {.discardable.} =
   p.advance()
   while not p.isAtEnd():
     if p.previous().tokenType == TokenType.SEMICOLON: return
-
     case p.peek().tokenType:
       of TokenType.CLASS,
          TokenType.FUN,
