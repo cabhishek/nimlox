@@ -1,4 +1,4 @@
-import strutils, token, tokenType, literalKind, expression, utils, errors
+import strutils, token, tokenKind, literalKind, expression, utils, errors
 
 type
   ParserError = ref object of Exception
@@ -16,26 +16,26 @@ proc previous(p: Parser): Token = p.tokens[p.current - 1]
 
 proc peek(p: Parser): Token = p.tokens[p.current]
 
-proc isAtEnd(p: Parser): bool = p.peek().tokenType == TokenType.EOF
+proc isAtEnd(p: Parser): bool = p.peek().kind == TokenKind.EOF
 
 proc advance(p: var Parser): Token {.discardable.} =
   if not p.isAtEnd(): p.current += 1
   return p.previous()
 
-proc check(p: Parser, tokenType: TokenType): bool =
+proc check(p: Parser, tokenKind: TokenKind): bool =
   if p.isAtEnd(): return false
-  return p.peek().tokenType == tokenType
+  return p.peek().kind == tokenKind
 
-proc match(p: var Parser, types: varargs[TokenType]): bool =
-  for tokenType in types:
-    if p.check(tokenType):
+proc match(p: var Parser, types: varargs[TokenKind]): bool =
+  for tokenKind in types:
+    if p.check(tokenKind):
       p.advance()
       return true
   return false
 
 proc multiplication(p: var Parser): Expression =
   var expr: Expression = p.unary()
-  while p.match(TokenType.SLASH, TokenType.STAR):
+  while p.match(TokenKind.SLASH, TokenKind.STAR):
     let
       operator: Token = p.previous()
       right: Expression = p.unary()
@@ -44,7 +44,7 @@ proc multiplication(p: var Parser): Expression =
 
 proc addition(p: var Parser): Expression =
   var expr: Expression = p.multiplication()
-  while p.match(TokenType.MINUS, TokenType.PLUS):
+  while p.match(TokenKind.MINUS, TokenKind.PLUS):
     let
       operator: Token = p.previous()
       right: Expression = p.multiplication()
@@ -53,10 +53,10 @@ proc addition(p: var Parser): Expression =
 
 proc comparison(p: var Parser): Expression =
   var expr: Expression = p.addition()
-  while p.match(TokenType.GREATER,
-                   TokenType.GREATER_EQUAL,
-                   TokenType.LESS,
-                   TokenType.LESS_EQUAL):
+  while p.match(TokenKind.GREATER,
+                   TokenKind.GREATER_EQUAL,
+                   TokenKind.LESS,
+                   TokenKind.LESS_EQUAL):
     let
       operator: Token = p.previous()
       right: Expression = p.addition()
@@ -65,7 +65,7 @@ proc comparison(p: var Parser): Expression =
 
 proc equality(p: var Parser): Expression =
   var expr: Expression = p.comparison()
-  while p.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL):
+  while p.match(TokenKind.BANG_EQUAL, TokenKind.EQUAL_EQUAL):
     let
       operator: Token = p.previous()
       right: Expression = p.comparison()
@@ -75,33 +75,33 @@ proc equality(p: var Parser): Expression =
 proc expression(p: var Parser): Expression = return p.equality()
 
 proc consume(p: var Parser,
-             tokenType: TokenType,
-             message: string): Token {.raises: ParserError.} =
-  if p.check(tokenType): return p.advance()
+             tokenKind: TokenKind,
+             message: string): Token =
+  if p.check(tokenKind): return p.advance()
   raise p.error(p.peek(), message)
 
 proc primary(p: var Parser): Expression =
-  if p.match(TokenType.FALSE):
+  if p.match(TokenKind.FALSE):
     result = Literal(kind: LiteralKind.BOOLEAN, bValue: false)
-  if p.match(TokenType.TRUE):
+  if p.match(TokenKind.TRUE):
     result = Literal(kind: LiteralKind.BOOLEAN, bValue: true)
-  if p.match(TokenType.NIL):
+  if p.match(TokenKind.NIL):
     # little hack to get around Nim's type system (here string type is set to nil)
     result = Literal(kind: LiteralKind.NIL, value: nil)
 
-  if p.match(TokenType.NUMBER):
+  if p.match(TokenKind.NUMBER):
     result = Literal(kind: LiteralKind.NUMBER, fValue: p.previous().fValue)
 
-  if p.match(TokenType.STRING):
+  if p.match(TokenKind.STRING):
     result = Literal(kind: LiteralKind.STRING, svalue: p.previous().sValue)
 
-  if p.match(TokenType.LEFT_PAREN):
+  if p.match(TokenKind.LEFT_PAREN):
     let expr = p.expression()
-    discard p.consume(TokenType.RIGHT_PAREN, "Expected ')' after expression")
+    discard p.consume(TokenKind.RIGHT_PAREN, "Expected ')' after expression")
     result = Grouping(expression: expr)
 
 proc unary(p: var Parser): Expression =
-  if p.match(TokenType.BANG, TokenType.MINUS):
+  if p.match(TokenKind.BANG, TokenKind.MINUS):
     let
       operator: Token = p.previous()
       right: Expression = p.unary()
@@ -111,21 +111,22 @@ proc unary(p: var Parser): Expression =
 proc synchronize(p: var Parser) {.discardable.} =
   p.advance()
   while not p.isAtEnd():
-    if p.previous().tokenType == TokenType.SEMICOLON: return
-    case p.peek().tokenType:
-      of TokenType.CLASS,
-         TokenType.FUN,
-         TokenType.VAR,
-         TokenType.FOR,
-         TokenType.IF,
-         TokenType.WHILE,
-         TokenType.PRINT,
-         TokenType.RETURN:
+    if p.previous().kind == TokenKind.SEMICOLON: return
+    case p.peek().kind:
+      of TokenKind.CLASS,
+         TokenKind.FUN,
+         TokenKind.VAR,
+         TokenKind.FOR,
+         TokenKind.IF,
+         TokenKind.WHILE,
+         TokenKind.PRINT,
+         TokenKind.RETURN:
         return
       else: discard
     p.advance()
 
 proc parse*(p: var Parser): Expression =
+  # Generate the syntax tree
   try:
     return p.expression()
   except ParserError:
