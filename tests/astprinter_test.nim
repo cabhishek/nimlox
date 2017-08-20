@@ -1,4 +1,4 @@
-import unittest, astprinter, token, tokenKind, literalKind
+import unittest, expression, astprinter, token, tokenKind, literalKind
 
 suite "test astprinter":
 

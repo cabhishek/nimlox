@@ -39,7 +39,7 @@ proc multiplication(p: var Parser): Expression =
     let
       operator: Token = p.previous()
       right: Expression = p.unary()
-      expr = Binary(left: expr, operator: operator, right: right)
+    expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
 proc addition(p: var Parser): Expression =
@@ -48,7 +48,7 @@ proc addition(p: var Parser): Expression =
     let
       operator: Token = p.previous()
       right: Expression = p.multiplication()
-      expr = Binary(left: expr, operator: operator, right: right)
+    expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
 proc comparison(p: var Parser): Expression =
@@ -60,7 +60,7 @@ proc comparison(p: var Parser): Expression =
     let
       operator: Token = p.previous()
       right: Expression = p.addition()
-      expr = Binary(left: expr, operator: operator, right: right)
+    expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
 proc equality(p: var Parser): Expression =
@@ -69,7 +69,7 @@ proc equality(p: var Parser): Expression =
     let
       operator: Token = p.previous()
       right: Expression = p.comparison()
-      expr = Binary(left: expr, operator: operator, right: right)
+    expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
 proc expression(p: var Parser): Expression = return p.equality()
