@@ -1,15 +1,18 @@
-import os, strutils, scanner, token, utils
+import os, strutils, scanner, token, parser, astprinter, utils
 
 const Prompt = ">>> "
 
 # Starts scanning the source code
 proc run(source: string) =
-  var s = newScanner(source)
-  let tokens = s.scanTokens()
-  for token in tokens:
-    display(indent($token, count=2))
+  var scanner = newScanner(source)
+  let 
+    tokens = scanner.scanTokens()
+    printer = AstPrinter()
+  var   
+    parser = newParser(tokens)
+    expression = parser.parse()
 
-  display("Total tokens: $1 lines: $2" % [$tokens.len, $s.line])
+  display(printer.print(expression))
 
 proc runFile(filename: string) =
   run(readFile(filename))

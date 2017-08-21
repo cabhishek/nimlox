@@ -12,7 +12,7 @@ proc strValue(expr: Literal): string =
     of LiteralKind.NIL: result = "nil"
 
 method print*(p: AstPrinter, expr: Expression): string {.base.}=
-  # override for concrete Expression types
+  # override from concrete Expression types
   return ""
 
 # generic method to retain concrete expression type info within polymorphic context
@@ -21,15 +21,15 @@ method print*[T: Binary|Unary|Grouping|Literal](p: AstPrinter, expr: T): string 
     return p.print(expr)
 
 template parenthesize(p: AstPrinter, name: string, exprs: varargs[Expression]): string =
-  # retain expression type object info within methods
-  var res = ""
-  res.add("(")
-  res.add(name)
+  # retain expression object info within methods
+  result=""
+  result.add("(")
+  result.add(name)
   for expr in items(exprs):
-    res.add(" ")
-    res.add(p.print(expr)) # recurse
-  res.add(")")
-  res # will be returned from calling methods
+    result.add(" ")
+    result.add(p.print(expr)) # recurse
+  result.add(")")
+  result # will be returned from the calling methods
 
 method print(p: AstPrinter, expr: Binary): string =
   return parenthesize(p,
