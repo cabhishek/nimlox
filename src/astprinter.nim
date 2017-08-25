@@ -13,7 +13,7 @@ proc strValue(expr: Literal): string =
 
 method print*(p: AstPrinter, expr: Expression): string {.base.}=
   # override from concrete Expression types
-  return ""
+  discard
 
 # generic method to retain concrete expression type info within polymorphic context
 method print*[T: Binary|Unary|Grouping|Literal](p: AstPrinter, expr: T): string =

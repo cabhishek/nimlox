@@ -5,15 +5,15 @@ nimlox [![Build Status](https://travis-ci.org/cabhishek/nimlox.svg?branch=master
 Still **work in progress**.
 
 ## Setup
-* Ensure `nim` is installed
+*  Ensure `nim 0.17.0+` is installed
     * Easiest way to install `nim` is via [choosenim](https://github.com/dom96/choosenim)
 
 ## Quick Start
-1. `make repl`   # starts the REPL
-1. `make sample` # interprets sample.lox file
+1. `nim repl lox`   # start the REPL
+1. `nim sample lox` # interpret sample.lox file
 
 ## Test
-1. `make tests`
+1. `nim test lox`
 
 ## License
 
