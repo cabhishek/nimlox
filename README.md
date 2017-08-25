@@ -1,4 +1,4 @@
-nimlox
+nimlox [![Build Status](https://travis-ci.org/cabhishek/nimlox.svg?branch=master)](https://travis-ci.org/cabhishek/nimlox)
 ====
 > Interpreter for the [Lox](http://www.craftinginterpreters.com/the-lox-language.html) language written in [Nim](https://nim-lang.org/).
 
