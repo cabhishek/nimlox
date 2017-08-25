@@ -1,4 +1,4 @@
-import strutils, tokenkind
+import strutils, tokenKind
 
 type
   Token* = object
