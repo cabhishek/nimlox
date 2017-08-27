@@ -1,6 +1,6 @@
 type
   LiteralKind* = enum
-    STRING,
-    NUMBER,
-    BOOLEAN,
-    NIL
+    litString,
+    litNumber,
+    litBool,
+    litNil

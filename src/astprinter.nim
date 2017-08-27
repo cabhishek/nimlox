@@ -3,13 +3,13 @@ import strutils, expression, token, literalKind
 type
   AstPrinter* = ref object of RootObj
 
-proc strValue(expr: Literal): string =
+proc `$`(expr: Literal): string =
   # Stringify literal value
   case expr.kind:
-    of LiteralKind.STRING: result = expr.sValue
-    of LiteralKind.NUMBER: result = $expr.fValue
-    of LiteralKind.BOOLEAN: result = $expr.bValue
-    of LiteralKind.NIL: result = "nil"
+    of litString: result = expr.strVal
+    of litNumber: result = $expr.floatVal
+    of litBool: result = $expr.boolVal
+    of litNil: result = "nil"
 
 method print*(p: AstPrinter, expr: Expression): string {.base.}=
   # override from concrete Expression types
@@ -39,7 +39,7 @@ method print(p: AstPrinter, expr: Binary): string =
   )
 
 method print(p: AstPrinter, expr: Literal): string =
-  return expr.strValue
+  return $expr
 
 method print(p: AstPrinter, expr: Grouping): string =
   return parenthesize(p, "group", expr.expression)

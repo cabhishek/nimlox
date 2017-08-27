@@ -5,7 +5,7 @@ proc reportError*(line: int, where: string, msg: string) =
   display(indent("Line: $1 Char: $2" % [$line, where], count=2))
 
 proc reportError*(token: Token, message: string) =
-  if token.kind == TokenKind.EOF:
+  if token.kind == tkEof:
     reportError(token.line, " at end", message)
   else:
     reportError(token.line, "at '$1'" % [token.lexeme], message)

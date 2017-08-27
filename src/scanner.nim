@@ -10,21 +10,21 @@ type
 
 const
   keywords = {
-    "and"    : TokenKind.AND,
-    "class"  : TokenKind.CLASS,
-    "else"   : TokenKind.ELSE,
-    "false"  : TokenKind.FALSE,
-    "fun"    : TokenKind.FUN,
-    "if"     : TokenKind.IF,
-    "nil"    : TokenKind.NIL,
-    "or"     : TokenKind.OR,
-    "print"  : TokenKind.PRINT,
-    "return" : TokenKind.RETURN,
-    "super"  : TokenKind.SUPER,
-    "this"   : TokenKind.THIS,
-    "true"   : TokenKind.TRUE,
-    "var"    : TokenKind.VAR,
-    "while"  : TokenKind.WHILE,
+     "and"    : tkAnd,
+     "class"  : tkClass,
+     "else"   : tkElse,
+     "false"  : tkFalse,
+     "fun"    : tkFun,
+     "if"     : tkIf,
+     "nil"    : tkNil,
+     "or"     : tkOr,
+     "print"  : tkPrint,
+     "return" : tkReturn,
+     "super"  : tkSuper,
+     "this"   : tkThis,
+     "true"   : tkTrue,
+     "var"    : tkVar,
+     "while"  : tkWhile,
   }.toTable
 
 proc isAtEnd(s: Scanner): bool =
@@ -62,12 +62,12 @@ proc match(s: var Scanner, expected: char): bool =
     s.current += 1
 
 # Overloaded methods
-proc addToken(s: var Scanner, kind: TokenKind) =
+proc addToken(s: var Scanner, tokKind: TokenKind) =
   # Add token along with metadata
   s.tokens.add(
     Token(
       line: s.line,
-      kind: kind,
+      kind: tokKind,
       lexeme: s.source[s.start..s.current-1]
     )
   )
@@ -77,9 +77,9 @@ proc addStringToken(s: var Scanner, literal: string) =
   s.tokens.add(
     Token(
       line: s.line,
-      kind: TokenKind.STRING,
+      kind: tkString,
       lexeme: s.source[s.start..s.current-1],
-      sValue: literal
+      val: literal
     )
   )
 
@@ -88,9 +88,9 @@ proc addFloatToken(s: var Scanner, literal: float) =
   s.tokens.add(
     Token(
       line: s.line,
-      kind: TokenKind.NUMBER,
+      kind: tkNumber,
       lexeme: s.source[s.start..s.current-1],
-      fValue: literal
+      fVal: literal
     )
   )
 
@@ -123,7 +123,7 @@ proc identifier(s: var Scanner) =
   let
     text: string = s.source[s.start..s.current-1]
     tokenKind = if keywords.contains(text): keywords[text]
-                else: TokenKind.IDENTIFIER
+                 else: tkIdentifier
   s.addToken(tokenKind)
 
 proc scanToken(s: var Scanner) =
@@ -131,42 +131,42 @@ proc scanToken(s: var Scanner) =
   let c: char = s.advance()
   case c:
     of '(':
-      s.addToken(TokenKind.LEFT_PAREN)
+       s.addToken(tkLeftParen)
     of ')':
-      s.addToken(TokenKind.RIGHT_PAREN)
+       s.addToken(tkRightParen)
     of '{':
-      s.addToken(TokenKind.LEFT_BRACE)
+       s.addToken(tkLeftBrace)
     of '}':
-      s.addToken(TokenKind.RIGHT_BRACE)
+       s.addToken(tkRightBrace)
     of ',':
-      s.addToken(TokenKind.COMMA)
+       s.addToken(tkComma)
     of '.':
-      s.addToken(TokenKind.DOT)
+       s.addToken(tkDot)
     of '-':
-      s.addToken(TokenKind.MINUS)
+       s.addToken(tkMinus)
     of '+':
-      s.addToken(TokenKind.PLUS)
+       s.addToken(tkPlus)
     of ';':
-      s.addToken(TokenKind.SEMICOLON)
+       s.addToken(tkSemicolon)
     of '*':
-      s.addToken(TokenKind.STAR)
+       s.addToken(tkStar)
     of '\r', '\t', ' ': # Ignore whitespace
       discard
     of '\L': # New line char '\n'
       s.line += 1
     of '!':
-      s.addToken(if s.match('='): TokenKind.BANG_EQUAL else: TokenKind.BANG)
+       s.addToken(if s.match('='): tkBangEqual else: tkBang)
     of '=':
-      s.addToken(if s.match('='): TokenKind.EQUAL_EQUAL else: TokenKind.EQUAL)
+       s.addToken(if s.match('='): tkEqualEqual else: tkEqual)
     of '>':
-      s.addToken(if s.match('='): TokenKind.GREATER_EQUAL else: TokenKind.GREATER)
+       s.addToken(if s.match('='): tkGreaterEqual else: tkGreater)
     of '<':
-      s.addToken(if s.match('='): TokenKind.LESS_EQUAL else: TokenKind.LESS)
+       s.addToken(if s.match('='): tkLessEqual else: tkLess)
     of '/':
       if s.match('/'):
         while(s.peek() != '\L' and not s.isAtEnd()):
           s.advance()
-      else: s.addToken(TokenKind.SLASH)
+      else: s.addToken(tkSlash)
     of '\"': s.scanString()
     else:
       if isDigit(c): s.scanNumber()
@@ -185,7 +185,7 @@ proc scanTokens*(s: var Scanner): seq[Token] =
   s.tokens.add(
     Token(
       line: s.line,
-      kind: TokenKind.EOF,
+      kind: tkEof,
       lexeme: ""
     )
   )

@@ -15,10 +15,9 @@ type
 
   Literal* = ref object of Expression
     case kind*: LiteralKind
-      of STRING: sValue*: string
-      of NUMBER: fValue*: float
-      of BOOLEAN: bValue*: bool
-      of NIL: value*: string
+      of litString: strVal*: string
+      of litNumber: floatVal*: float
+      of litBool: boolVal*: bool
       else: discard
 
   Unary* = ref object of Expression

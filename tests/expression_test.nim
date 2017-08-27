@@ -3,12 +3,10 @@ import unittest, expression, token, tokenKind, literalKind
 suite "test expression":
 
   test "literal types":
-    let sLit = Literal(kind: LiteralKind.STRING, sValue: "abc")
-    let fLit = Literal(kind: LiteralKind.NUMBER, fValue: 123.4)
-    let bLit = Literal(kind: LiteralKind.BOOLEAN, bValue: true)
-    let nilLit = Literal(kind: LiteralKind.NIL, value: nil)
+    let strLit = Literal(kind: litString, strVal: "abc")
+    let floatLit = Literal(kind: litNumber, floatVal: 123.4)
+    let boolLit = Literal(kind: litBool, boolVal: true)
     check:
-      sLit.sValue is string
-      bLit.bValue is bool
-      fLit.fValue is float
-      nilLit.value.isNil
+      strLit.strVal is string
+      boolLit.boolVal is bool
+      floatLit.floatVal is float

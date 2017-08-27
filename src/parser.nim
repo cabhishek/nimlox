@@ -16,7 +16,7 @@ proc previous(p: Parser): Token = p.tokens[p.current - 1]
 
 proc peek(p: Parser): Token = p.tokens[p.current]
 
-proc isAtEnd(p: Parser): bool = p.peek().kind == TokenKind.EOF
+proc isAtEnd(p: Parser): bool = p.peek().kind == tkEof
 
 proc advance(p: var Parser): Token {.discardable.} =
   if not p.isAtEnd(): p.current += 1
@@ -35,7 +35,7 @@ proc match(p: var Parser, types: varargs[TokenKind]): bool =
 
 proc multiplication(p: var Parser): Expression =
   var expr: Expression = p.unary()
-  while p.match(TokenKind.SLASH, TokenKind.STAR):
+  while p.match(tkSlash, tkStar):
     let
       operator: Token = p.previous()
       right: Expression = p.unary()
@@ -44,7 +44,7 @@ proc multiplication(p: var Parser): Expression =
 
 proc addition(p: var Parser): Expression =
   var expr: Expression = p.multiplication()
-  while p.match(TokenKind.MINUS, TokenKind.PLUS):
+  while p.match(tkMinus, tkPlus):
     let
       operator: Token = p.previous()
       right: Expression = p.multiplication()
@@ -53,10 +53,10 @@ proc addition(p: var Parser): Expression =
 
 proc comparison(p: var Parser): Expression =
   var expr: Expression = p.addition()
-  while p.match(TokenKind.GREATER,
-                   TokenKind.GREATER_EQUAL,
-                   TokenKind.LESS,
-                   TokenKind.LESS_EQUAL):
+  while p.match(tkGreater,
+                tkGreaterEqual,
+                tkLess,
+                tkLessEqual):
     let
       operator: Token = p.previous()
       right: Expression = p.addition()
@@ -65,7 +65,7 @@ proc comparison(p: var Parser): Expression =
 
 proc equality(p: var Parser): Expression =
   var expr: Expression = p.comparison()
-  while p.match(TokenKind.BANG_EQUAL, TokenKind.EQUAL_EQUAL):
+  while p.match(tkBangEqual, tkEqualEqual):
     let
       operator: Token = p.previous()
       right: Expression = p.comparison()
@@ -81,27 +81,27 @@ proc consume(p: var Parser,
   raise p.error(p.peek(), message)
 
 proc primary(p: var Parser): Expression =
-  if p.match(TokenKind.FALSE):
-    result = Literal(kind: LiteralKind.BOOLEAN, bValue: false)
-  if p.match(TokenKind.TRUE):
-    result = Literal(kind: LiteralKind.BOOLEAN, bValue: true)
-  if p.match(TokenKind.NIL):
+  if p.match(tkFalse):
+    result = Literal(kind: litBool, boolVal: false)
+  if p.match(tkTrue):
+    result = Literal(kind: litBool, boolVal: true)
+  if p.match(tkNil):
     # little hack to get around Nim's type system (here string type is set to nil)
-    result = Literal(kind: LiteralKind.NIL, value: nil)
+    result = Literal(kind: litNil)
 
-  if p.match(TokenKind.NUMBER):
-    result = Literal(kind: LiteralKind.NUMBER, fValue: p.previous().fValue)
+  if p.match(tkNumber):
+    result = Literal(kind: litNumber, floatVal: p.previous().floatVal)
 
-  if p.match(TokenKind.STRING):
-    result = Literal(kind: LiteralKind.STRING, svalue: p.previous().sValue)
+  if p.match(tkString):
+    result = Literal(kind: litString, strVal: p.previous().strVal)
 
-  if p.match(TokenKind.LEFT_PAREN):
+  if p.match(tkLeftParen):
     let expr = p.expression()
-    discard p.consume(TokenKind.RIGHT_PAREN, "Expected ')' after expression")
+    discard p.consume(tkRightParen, "Expected ')' after expression")
     result = Grouping(expression: expr)
 
 proc unary(p: var Parser): Expression =
-  if p.match(TokenKind.BANG, TokenKind.MINUS):
+  if p.match(tkBang, tkMinus):
     let
       operator: Token = p.previous()
       right: Expression = p.unary()
@@ -111,16 +111,16 @@ proc unary(p: var Parser): Expression =
 proc synchronize(p: var Parser) {.discardable.} =
   p.advance()
   while not p.isAtEnd():
-    if p.previous().kind == TokenKind.SEMICOLON: return
+    if p.previous().kind == tkSemicolon: return
     case p.peek().kind:
-      of TokenKind.CLASS,
-         TokenKind.FUN,
-         TokenKind.VAR,
-         TokenKind.FOR,
-         TokenKind.IF,
-         TokenKind.WHILE,
-         TokenKind.PRINT,
-         TokenKind.RETURN:
+      of tkClass,
+         tkFun,
+         tkVar,
+         tkFor,
+         tkIf,
+         tkWhile,
+         tkPrint,
+         tkReturn:
         return
       else: discard
     p.advance()

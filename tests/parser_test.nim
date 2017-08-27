@@ -5,18 +5,18 @@ suite "test parser":
     let
       tokens = @[
         Token(
-          kind: Tokenkind.NUMBER,
-          fValue: 1
+          kind: tkNumber,
+          floatVal: 1
         ),
         Token(
-          kind: Tokenkind.PLUS,
+          kind: tkPlus,
           lexeme: "+"
         ),
         Token(
-          kind: Tokenkind.NUMBER,
-          fValue: 2
+          kind: tkNumber,
+          floatVal: 2
         ),
-        Token(kind: Tokenkind.EOF)
+        Token(kind: tkEof)
       ]
       printer = AstPrinter()
 
@@ -30,14 +30,14 @@ suite "test parser":
     let
       tokens = @[
         Token(
-          kind: Tokenkind.BANG,
+          kind: tkBang,
           lexeme: "!"
         ),
         Token(
-          kind: Tokenkind.FALSE,
+          kind: tkFalse,
           lexeme: "false"
         ),
-        Token(kind: Tokenkind.EOF)
+        Token(kind: tkEof)
       ]
       printer = AstPrinter()
 
@@ -50,13 +50,13 @@ suite "test parser":
   test "grouping expression":
     let
       tokens = @[
-        Token(kind: TokenKind.MINUS, lexeme: "-"),
-        Token(kind: TokenKind.NUMBER, fValue: 123),
-        Token(kind: TokenKind.STAR, lexeme: "*"),
-        Token(kind: TokenKind.LEFT_PAREN, lexeme: "("),
-        Token(kind: TokenKind.NUMBER, fValue: 45.67),
-        Token(kind: TokenKind.RIGHT_PAREN, lexeme: ")"),
-        Token(kind: Tokenkind.EOF)
+        Token(kind: tkMinus, lexeme: "-"),
+        Token(kind: tkNumber, floatVal: 123),
+        Token(kind: tkStar, lexeme: "*"),
+        Token(kind: tkLeftParen, lexeme: "("),
+        Token(kind: tkNumber, floatVal: 45.67),
+        Token(kind: tkRightParen, lexeme: ")"),
+        Token(kind: tkEof)
       ]
       printer = AstPrinter()
 

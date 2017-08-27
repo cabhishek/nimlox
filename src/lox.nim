@@ -1,14 +1,14 @@
-import os, strutils, scanner, token, parser, astprinter, utils
+import os, strutils, lexer, token, parser, astprinter, utils
 
 const Prompt = ">>> "
 
 # Starts scanning the source code
 proc run(source: string) =
-  var scanner = newScanner(source)
-  let 
-    tokens = scanner.scanTokens()
+  var lex = newLexer(source)
+  let
+    tokens = lex.scanTokens()
     printer = AstPrinter()
-  var   
+  var
     parser = newParser(tokens)
     expression = parser.parse()
 

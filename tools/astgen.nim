@@ -65,10 +65,9 @@ proc generateAst(dirName: string) =
       "type": "case",
       "kind": "LiteralKind",
       "props": [
-        {"of": "STRING", "name":"sValue", "type": "string"},
-        {"of": "NUMBER", "name":"fValue", "type": "float"},
-        {"of": "BOOLEAN", "name":"bValue", "type": "bool"},
-        {"of": "NIL", "name":"value", "type": "string"},
+        {"of": "litString", "name":"strVal", "type": "string"},
+        {"of": "litNumber", "name":"floatVal", "type": "float"},
+        {"of": "litBool", "name":"boolVal", "type": "bool"},
       ]
     },
     "Unary": {

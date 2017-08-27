@@ -4,9 +4,9 @@ suite "test astprinter":
 
   test "simple binary expression":
     let expression = Binary(
-      left: Literal(kind: LiteralKind.NUMBER, fValue: 1),
-      operator: Token(kind: TokenKind.PLUS, lexeme: "+"),
-      right: Literal(kind: LiteralKind.NUMBER, fValue: 2)
+      left: Literal(kind: litNumber, floatVal: 1),
+      operator: Token(kind: tkPlus, lexeme: "+"),
+      right: Literal(kind: litNumber, floatVal: 2)
     )
     let printer = AstPrinter()
     check:
@@ -15,12 +15,12 @@ suite "test astprinter":
   test "complex binary expression":
     let expression = Binary(
       left: Unary(
-        operator: Token(kind: TokenKind.MINUS, lexeme: "-"),
-        right: Literal(kind: LiteralKind.NUMBER, fValue: 123)
+        operator: Token(kind: tkMinus, lexeme: "-"),
+        right: Literal(kind: litNumber, floatVal: 123)
       ),
-      operator: Token(kind: TokenKind.STAR, lexeme: "*"),
+      operator: Token(kind: tkStar, lexeme: "*"),
       right: Grouping(
-        expression: Literal(kind: LiteralKind.NUMBER, fValue: 45.67)
+        expression: Literal(kind: litNumber, floatVal: 45.67)
       )
     )
     let printer = AstPrinter()
@@ -28,15 +28,15 @@ suite "test astprinter":
       printer.print(expression) == "(* (- 123.0) (group 45.67))"
 
   test "null literal expression":
-    let expression = Literal(kind: LiteralKind.NIL, value: nil)
+    let expression = Literal(kind: litNil)
     let printer = AstPrinter()
     check:
       printer.print(expression) == "nil"
 
   test "unary expression":
     let expression = Unary(
-      operator: Token(kind: Tokenkind.BANG, lexeme: "!"),
-      right: Literal(kind: LiteralKind.BOOLEAN, bValue: false)
+      operator: Token(kind: tkBang, lexeme: "!"),
+      right: Literal(kind: litBool, boolVal: false)
     )
     let printer = AstPrinter()
     check:
