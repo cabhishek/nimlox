@@ -28,8 +28,9 @@ suite "test astprinter":
       printer.print(expression) == "(* (- 123.0) (group 45.67))"
 
   test "null literal expression":
-    let expression = Literal(kind: litNil)
-    let printer = AstPrinter()
+    let
+      expression = Literal(kind: litNil)
+      printer = AstPrinter()
     check:
       printer.print(expression) == "nil"
 
