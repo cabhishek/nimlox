@@ -13,6 +13,7 @@ type
       of loxBool: boolVal*: bool
       of loxNil: nil
 
+# Reduce boilerplate code
 template `$`*(val: LoxValue): string =
   case val.kind:
     of loxString: val.strVal
@@ -56,10 +57,10 @@ template `==`(left, right: LoxValue): bool =
 template `!=`(left, right: LoxValue): bool =
   left.floatVal != right.floatVal
 
-proc strType(left, right: LoxValue): bool =
-  result = (left.kind == loxString) and (right.kind == loxString)
+template strType(left, right: LoxValue): bool =
+  (left.kind == loxString) and (right.kind == loxString)
 
-# Reduce boilerplate code
+# Construct Lox value types
 template loxValue(val: string): LoxValue = LoxValue(kind: loxString, strVal: val)
 template loxValue(val: float): LoxValue = LoxValue(kind: loxNumber, floatVal: val)
 template loxValue(val: bool): LoxValue = LoxValue(kind: loxBool, boolVal: val)
@@ -94,9 +95,9 @@ method evaluate(self: Interpreter, expr: Binary): LoxValue =
       result = loxValue(left * right)
     of tkPlus:
       if strType(left, right):
-        result = loxValue(left & right) # string concat
+        result = loxValue(left & right) # String concat
       else:
-        result = loxValue(left + right) # addition
+        result = loxValue(left + right) # Addition
     of tkGreater:
       result = loxValue(left > right)
     of tkGreaterEqual:
@@ -110,3 +111,4 @@ method evaluate(self: Interpreter, expr: Binary): LoxValue =
     of tkEqualEqual:
       result = loxValue(left == right)
     else: result = loxValue()
+

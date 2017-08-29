@@ -61,7 +61,7 @@ proc match(lex: var Lexer, expected: char): bool =
     lex.current += 1
 
 # Overloaded methods
-proc addToken(lex: var Lexer, tokKind: TokenKind) =
+template addToken(lex: var Lexer, tokKind: TokenKind) =
   # Add token along with metadata
   lex.tokens.add(
     Token(
@@ -71,7 +71,7 @@ proc addToken(lex: var Lexer, tokKind: TokenKind) =
     )
   )
 
-proc addStringToken(lex: var Lexer, literal: string) =
+template addStringToken(lex: var Lexer, literal: string) =
   # Add string token along with metadata
   lex.tokens.add(
     Token(
@@ -82,7 +82,7 @@ proc addStringToken(lex: var Lexer, literal: string) =
     )
   )
 
-proc addFloatToken(lex: var Lexer, literal: float) =
+template addFloatToken(lex: var Lexer, literal: float) =
   # Add float token along with metadata
   lex.tokens.add(
     Token(

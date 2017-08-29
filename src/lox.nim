@@ -1,9 +1,7 @@
-import os, strutils, lexer, token, parser, astprinter, utils
+ import os, strutils, lexer, token, parser, astprinter, utils
 
-const Prompt = ">>> "
-
-# Starts scanning the source code
-proc run(source: string) =
+# Start scanning lox source code
+template exec(source: string) =
   var lex = newLexer(source)
   let
     tokens = lex.scanTokens()
@@ -14,20 +12,19 @@ proc run(source: string) =
 
   display(printer.print(expression))
 
-proc runFile(filename: string) =
-  run(readFile(filename))
+template execFile(filename: string) =
+  exec(readFile(filename))
 
-# REPL interface for lox
-proc runPrompt() =
+template startRepl() =
   while true:
-    display(Prompt, newLine=false)
-    run(stdin.readline())
+    display(">>> ", newLine=false)
+    exec(readline(stdin))
 
 when isMainModule:
   let params: seq[string] = commandLineParams()
   if params.len > 1:
-    quit("Usage: lox [script]")
+    quit("Usage: lox [filename] or [expression]")
   elif params.len == 1:
-    runFile(params[0])
+    execFile(params[0])
   else:
-    runPrompt()
+    startRepl()
