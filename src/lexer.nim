@@ -7,7 +7,6 @@ type
     source*: string
     tokens*: seq[Token]
     start*, current*, line*: int
-
 const
   keywords = {
      "and"    : tkAnd,
@@ -96,11 +95,9 @@ proc addFloatToken(lex: var Lexer, literal: float) =
 
 proc scanNumber(lex: var Lexer) =
   while isDigit(lex.peek()): lex.advance()
-
   if lex.peek() == '.' and isDigit(lex.peekNext()):
     lex.advance()
     while isDigit(lex.peek()): lex.advance()
-
   let value = lex.source[lex.start..lex.current-1]
   lex.addFloatToken(parseFloat(value))
 
@@ -113,7 +110,6 @@ proc scanString(lex: var Lexer) =
     reportError(lex.line, lex.source[lex.start..lex.current], "Unterminated string")
 
   lex.advance()
-
   # Trim the surrounding quotelex.
   let value = lex.source[lex.start+1..lex.current-2]
   lex.addStringToken(value)
@@ -180,7 +176,6 @@ proc scanTokens*(lex: var Lexer): seq[Token] =
   while not lex.isAtEnd():
     lex.start = lex.current
     lex.scanToken()
-
   # EOF token
   lex.tokens.add(
     Token(

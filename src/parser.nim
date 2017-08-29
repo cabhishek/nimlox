@@ -22,13 +22,13 @@ proc advance(p: var Parser): Token {.discardable.} =
   if not p.isAtEnd(): p.current += 1
   return p.previous()
 
-proc check(p: Parser, tokenKind: TokenKind): bool =
+proc check(p: Parser, tokKind: TokenKind): bool =
   if p.isAtEnd(): return false
-  return p.peek().kind == tokenKind
+  return p.peek().kind == tokKind
 
 proc match(p: var Parser, types: varargs[TokenKind]): bool =
-  for tokenKind in types:
-    if p.check(tokenKind):
+  for tokKind in types:
+    if p.check(tokKind):
       p.advance()
       return true
   return false
@@ -75,9 +75,9 @@ proc equality(p: var Parser): Expression =
 proc expression(p: var Parser): Expression = return p.equality()
 
 proc consume(p: var Parser,
-             tokenKind: TokenKind,
+             tokKind: TokenKind,
              message: string): Token =
-  if p.check(tokenKind): return p.advance()
+  if p.check(tokKind): return p.advance()
   raise p.error(p.peek(), message)
 
 proc primary(p: var Parser): Expression =
@@ -86,7 +86,6 @@ proc primary(p: var Parser): Expression =
   if p.match(tkTrue):
     result = Literal(kind: litBool, boolVal: true)
   if p.match(tkNil):
-    # little hack to get around Nim's type system (here string type is set to nil)
     result = Literal(kind: litNil)
 
   if p.match(tkNumber):
