@@ -1,4 +1,4 @@
-import os, strutils, token, tokenKind, errors, utils, tables
+import os, strutils, token, tokenKind, loxerror, utils, tables
 
 type
   # Lexer represents a lexical Lexer that does lexical-analysis on the source.
@@ -60,7 +60,6 @@ proc match(lex: var Lexer, expected: char): bool =
     # Group current & previous chars into a single tokenKind
     lex.current += 1
 
-# Overloaded methods
 template addToken(lex: var Lexer, tokKind: TokenKind) =
   # Add token along with metadata
   lex.tokens.add(
@@ -117,9 +116,9 @@ proc scanString(lex: var Lexer) =
 proc identifier(lex: var Lexer) =
   while isAlphaNumeric(lex. peek()): lex.advance()
   let
-    text: string = lex.source[lex.start..lex.current-1]
+    text = lex.source[lex.start..lex.current-1]
     tokenKind = if keywords.contains(text): keywords[text]
-                 else: tkIdentifier
+                else: tkIdentifier
   lex.addToken(tokenKind)
 
 proc scanToken(lex: var Lexer) =

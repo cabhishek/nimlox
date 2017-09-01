@@ -4,6 +4,7 @@ import token, literalKind
 
 type
   Expression* = ref object of RootObj
+    hasError*: bool
 
   Binary* = ref object of Expression
     left*: Expression

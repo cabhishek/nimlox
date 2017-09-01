@@ -1,29 +1,34 @@
- import os, strutils, lexer, token, parser, astprinter, utils
+import os, strutils, lexer, token, expression, parser, interpreter, utils, loxerror, typetraits
 
 # Start scanning lox source code
-template exec(source: string) =
+proc exec(source: string) =
   var lex = newLexer(source)
   let
     tokens = lex.scanTokens()
-    printer = AstPrinter()
+    interpreter = Interpreter()
   var
     parser = newParser(tokens)
-    expression = parser.parse()
+    expr = parser.parse()
 
-  display(printer.print(expression))
+  if expr.hasError: return
+
+  let result = interpreter.interpret(expr)
+  if result.kind == loxException: return
+
+  display($result)
 
 template execFile(filename: string) =
   exec(readFile(filename))
 
 template startRepl() =
   while true:
-    display(">>> ", newLine=false)
+    display("lox> ", newLine=false)
     exec(readline(stdin))
 
 when isMainModule:
   let params: seq[string] = commandLineParams()
   if params.len > 1:
-    quit("Usage: lox [filename] or [expression]")
+    quit("Usage: lox [filename]")
   elif params.len == 1:
     execFile(params[0])
   else:

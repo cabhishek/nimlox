@@ -1,7 +1,6 @@
-import strutils, token, tokenKind, literalKind, expression, utils, errors
+import strutils, token, tokenKind, literalKind, expression, utils, loxerror
 
 type
-  ParserError = ref object of Exception
   Parser= object
     current*: int
     tokens*: seq[Token]
@@ -72,7 +71,7 @@ proc equality(p: var Parser): Expression =
     expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc expression(p: var Parser): Expression = return p.equality()
+proc expression(p: var Parser): Expression = p.equality()
 
 proc consume(p: var Parser,
              tokKind: TokenKind,
@@ -82,22 +81,26 @@ proc consume(p: var Parser,
 
 proc primary(p: var Parser): Expression =
   if p.match(tkFalse):
-    result = Literal(kind: litBool, boolVal: false)
+    return Literal(kind: litBool, boolVal: false)
+
   if p.match(tkTrue):
-    result = Literal(kind: litBool, boolVal: true)
+    return Literal(kind: litBool, boolVal: true)
+
   if p.match(tkNil):
-    result = Literal(kind: litNil)
+    return Literal(kind: litNil)
 
   if p.match(tkNumber):
-    result = Literal(kind: litNumber, floatVal: p.previous().floatVal)
+    return Literal(kind: litNumber, floatVal: p.previous().floatVal)
 
   if p.match(tkString):
-    result = Literal(kind: litString, strVal: p.previous().strVal)
+    return Literal(kind: litString, strVal: p.previous().strVal)
 
   if p.match(tkLeftParen):
     let expr = p.expression()
     discard p.consume(tkRightParen, "Expected ')' after expression")
-    result = Grouping(expression: expr)
+    return Grouping(expression: expr)
+
+  raise p.error(p.peek(), "Expect expression.")
 
 proc unary(p: var Parser): Expression =
   if p.match(tkBang, tkMinus):
@@ -130,7 +133,7 @@ proc parse*(p: var Parser): Expression =
     return p.expression()
   except ParserError:
       p.synchronize()
-      return nil
+      return Expression(hasError: true)
 
 proc newParser*(tokens: seq[Token]): Parser =
   # Create a new Parser instance
@@ -138,3 +141,4 @@ proc newParser*(tokens: seq[Token]): Parser =
     current: 0,
     tokens: tokens
   )
+

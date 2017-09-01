@@ -9,7 +9,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 123.0)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.floatVal == -123.0
 
@@ -20,7 +20,7 @@ suite "test interpreter":
         right: Literal(kind: litBool, boolVal: false)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.boolVal == true
 
@@ -32,9 +32,21 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 3)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.floatVal == 5.0
+
+  test "float to int conversion for display":
+    let
+      expr = Binary(
+        left: Literal(kind: litNumber, floatVal: 2),
+        operator: Token(kind: tkPlus, lexeme: "+"),
+        right: Literal(kind: litNumber, floatVal: 3)
+      )
+      i = Interpreter()
+      result = i.interpret(expr)
+    check:
+       $result == "5" # stripped .0
 
   test "multiplication binary expression":
     let
@@ -44,7 +56,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 3)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.floatVal == 6.0
 
@@ -56,7 +68,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 3)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.floatVal == -1.0
 
@@ -68,7 +80,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 2)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.boolVal == true
 
@@ -80,7 +92,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 2)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.boolVal == true
 
@@ -92,7 +104,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 2)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.boolVal == true
 
@@ -104,7 +116,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 4)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
       result.boolVal == false
 
@@ -116,7 +128,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 2)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.boolVal == false
 
@@ -128,7 +140,7 @@ suite "test interpreter":
         right: Literal(kind: litNumber, floatVal: 2)
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.boolVal == true
 
@@ -144,7 +156,7 @@ suite "test interpreter":
         )
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.strVal == "abc"
 
@@ -164,7 +176,36 @@ suite "test interpreter":
         )
       )
       i = Interpreter()
-      result = i.evaluate(expr)
+      result = i.interpret(expr)
     check:
        result.floatVal == 6
 
+  test "grouping expression":
+    let
+      expr = Grouping(
+        expression: Binary(
+          left: Literal(kind: litNumber, floatVal: 10),
+          operator: Token(kind: tkStar, lexeme:"*"),
+          right: Binary(
+            left: Literal(kind: litNumber, floatVal: 1),
+            operator: Token(kind: tkPlus, lexeme: "+"),
+            right: Literal(kind: litNumber, floatVal: 2)
+          )
+        )
+      )
+      i = Interpreter()
+      result = i.interpret(expr)
+    check:
+      result.floatVal == 30
+
+  test "invalid operand error":
+    let
+      expr = Binary(
+        left: Literal(kind: litNumber, floatVal: 1),
+        operator: Token(kind: tkPlus, lexeme: "+"),
+        right: Literal(kind: litString, strVal: "a")
+      )
+      i = Interpreter()
+      result = i.interpret(expr)
+    check:
+       result.kind == loxException

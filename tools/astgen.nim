@@ -9,7 +9,6 @@ const
   caseStmtDesc = "case kind*: $1"
   caseOfDesc = "of $1: $2*: $3"
   caseElseDesc = "else: discard"
-  methodDesc = "method accept*[T](expr: $1, v: Visitor): T = return v.visit$1Expression(expr)"
 
 proc addLine(content: var string, line: string="", lineBreak: int=1) =
   if not line.isNilOrEmpty: content.add(line)
@@ -20,10 +19,9 @@ proc addImport(content: var string, modules: string) =
 
 proc addTypes(content: var string, types: JsonNode) =
   content.addLine("type")
-  content.addLine(indent(typeDesc % ["Expression", "RootObj"], count=2), lineBreak=2)
 
   for name, obj in pairs(types):
-    content.addLine(indent(typeDesc % [name, "Expression"], count=2))
+    content.addLine(indent(typeDesc % [name, obj["extendFrom"].str], count=2))
     case obj["type"].str:
       of "regular":
         for prop in obj["props"]:
@@ -35,22 +33,22 @@ proc addTypes(content: var string, types: JsonNode) =
         content.addLine(indent(caseElseDesc, count=6))
     content.addLine()
 
-proc addMethods(content: var string, types: JsonNode) =
-  # Method to accomodate visitor pattern
-  for param, _ in pairs(types):
-    content.addLine(methodDesc % param, lineBreak=2)
-
-proc addAbstractMethod(content: var string) =
-  content.addLine("method accept*[T](expr: Expression, v: Visitor): T = quit(\"Overide me\")", lineBreak=2)
-
 proc generateAst(dirName: string) =
   let outputDir = getCurrentDir() / dirName
   echo "Output directory: $1" % outputDir
   discard existsOrCreateDir(outputDir)
   # Different types of expressions in lox language
   let types: JsonNode = %* {
+    "Expression": {
+      "type": "regular",
+      "extendFrom": "RootObj",
+      "props": [
+        {"name": "hasError", "type": "bool"},
+      ]
+    },
     "Binary": {
       "type": "regular",
+      "extendFrom": "Expression",
       "props": [
         {"name": "left", "type": "Expression"},
         {"name": "operator", "type": "Token"},
@@ -59,10 +57,12 @@ proc generateAst(dirName: string) =
     },
     "Grouping": {
       "type": "regular",
+      "extendFrom": "Expression",
       "props": [{"name": "expression", "type": "Expression"}]
     },
     "Literal": {
       "type": "case",
+      "extendFrom": "Expression",
       "kind": "LiteralKind",
       "props": [
         {"of": "litString", "name":"strVal", "type": "string"},
@@ -72,6 +72,7 @@ proc generateAst(dirName: string) =
     },
     "Unary": {
       "type": "regular",
+      "extendFrom": "Expression",
       "props": [
         {"name": "operator", "type": "Token"},
         {"name": "right", "type": "Expression"}
