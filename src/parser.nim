@@ -1,11 +1,11 @@
-import strutils, token, tokenKind, literalKind, expression, utils, loxerror
+import strutils, token, tokenKind, literalKind, expr, utils, loxerror
 
 type
   Parser= object
     current*: int
     tokens*: seq[Token]
 
-proc unary(p: var Parser): Expression # forward declare
+proc unary(p: var Parser): Expr # forward declare
 
 proc error(p: Parser, token: Token, message: string): ParserError =
   reportError(token, message)
@@ -32,46 +32,46 @@ proc match(p: var Parser, types: varargs[TokenKind]): bool =
       return true
   return false
 
-proc multiplication(p: var Parser): Expression =
-  var expr: Expression = p.unary()
+proc multiplication(p: var Parser): Expr =
+  var expr: Expr = p.unary()
   while p.match(tkSlash, tkStar):
     let
       operator: Token = p.previous()
-      right: Expression = p.unary()
+      right: Expr = p.unary()
     expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc addition(p: var Parser): Expression =
-  var expr: Expression = p.multiplication()
+proc addition(p: var Parser): Expr =
+  var expr: Expr = p.multiplication()
   while p.match(tkMinus, tkPlus):
     let
       operator: Token = p.previous()
-      right: Expression = p.multiplication()
+      right: Expr = p.multiplication()
     expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc comparison(p: var Parser): Expression =
-  var expr: Expression = p.addition()
+proc comparison(p: var Parser): Expr =
+  var expr: Expr = p.addition()
   while p.match(tkGreater,
                 tkGreaterEqual,
                 tkLess,
                 tkLessEqual):
     let
       operator: Token = p.previous()
-      right: Expression = p.addition()
+      right: Expr = p.addition()
     expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc equality(p: var Parser): Expression =
-  var expr: Expression = p.comparison()
+proc equality(p: var Parser): Expr =
+  var expr: Expr = p.comparison()
   while p.match(tkBangEqual, tkEqualEqual):
     let
       operator: Token = p.previous()
-      right: Expression = p.comparison()
+      right: Expr = p.comparison()
     expr = Binary(left: expr, operator: operator, right: right)
   return expr
 
-proc expression(p: var Parser): Expression = p.equality()
+proc expression(p: var Parser): Expr = p.equality()
 
 proc consume(p: var Parser,
              tokKind: TokenKind,
@@ -79,7 +79,7 @@ proc consume(p: var Parser,
   if p.check(tokKind): return p.advance()
   raise p.error(p.peek(), message)
 
-proc primary(p: var Parser): Expression =
+proc primary(p: var Parser): Expr =
   if p.match(tkFalse):
     return Literal(kind: litBool, boolVal: false)
 
@@ -102,11 +102,11 @@ proc primary(p: var Parser): Expression =
 
   raise p.error(p.peek(), "Expect expression.")
 
-proc unary(p: var Parser): Expression =
+proc unary(p: var Parser): Expr =
   if p.match(tkBang, tkMinus):
     let
       operator: Token = p.previous()
-      right: Expression = p.unary()
+      right: Expr = p.unary()
     return Unary(operator: operator, right: right)
   return p.primary()
 
@@ -127,13 +127,13 @@ proc synchronize(p: var Parser) {.discardable.} =
       else: discard
     p.advance()
 
-proc parse*(p: var Parser): Expression =
+proc parse*(p: var Parser): Expr =
   # Generate the syntax tree
   try:
     return p.expression()
   except ParserError:
       p.synchronize()
-      return Expression(hasError: true)
+      return Expr(hasError: true)
 
 proc newParser*(tokens: seq[Token]): Parser =
   # Create a new Parser instance

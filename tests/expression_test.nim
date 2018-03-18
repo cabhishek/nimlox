@@ -1,4 +1,4 @@
-import unittest, expression, token, tokenKind, literalKind
+import unittest, expr, token, tokenKind, literalKind
 
 suite "test expression":
 

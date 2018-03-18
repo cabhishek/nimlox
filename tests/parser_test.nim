@@ -1,4 +1,4 @@
-import unittest, token, tokenKind, literalKind, parser, astprinter, expression, loxerror
+import unittest, token, tokenKind, literalKind, parser, astprinter, expr, loxerror
 
 suite "test parser":
   test "binary expression":

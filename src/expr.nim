@@ -3,25 +3,25 @@
 import token, literalKind
 
 type
-  Expression* = ref object of RootObj
+  Expr* = ref object of RootObj
     hasError*: bool
 
-  Binary* = ref object of Expression
-    left*: Expression
+  Binary* = ref object of Expr
+    left*: Expr
     operator*: Token
-    right*: Expression
+    right*: Expr
 
-  Grouping* = ref object of Expression
-    expression*: Expression
+  Grouping* = ref object of Expr
+    expression*: Expr
 
-  Literal* = ref object of Expression
+  Literal* = ref object of Expr
     case kind*: LiteralKind
       of litString: strVal*: string
       of litNumber: floatVal*: float
       of litBool: boolVal*: bool
       else: discard
 
-  Unary* = ref object of Expression
+  Unary* = ref object of Expr
     operator*: Token
-    right*: Expression
+    right*: Expr
 

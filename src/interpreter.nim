@@ -1,4 +1,4 @@
-import strutils, expression, token, tokenKind, literalKind, loxerror, utils
+import strutils, expr, token, tokenKind, literalKind, loxerror, utils
 
 type
   Interpreter* = ref object of RootObj
@@ -77,7 +77,7 @@ proc checkNumberOperand(operator: Token, left, right: LoxValue) =
     reportError(operator, msg)
     raise newException(RuntimeError, msg)
 
-method evaluate(self: Interpreter, expr: Expression): LoxValue {.base.} = discard
+method evaluate(self: Interpreter, expr: Expr): LoxValue {.base.} = discard
 
 method evaluate(self: Interpreter, expr: Grouping): LoxValue = self.evaluate(expr.expression)
 
@@ -132,7 +132,7 @@ method evaluate(self: Interpreter, expr: Binary): LoxValue =
       result = loxValue(left <= right)
     else: result = loxValue()
 
-method interpret*(self: Interpreter, expr: Expression): LoxValue {.base.} =
+method interpret*(self: Interpreter, expr: Expr): LoxValue {.base.} =
   try:
     result = self.evaluate(expr)
   except RuntimeError as e:

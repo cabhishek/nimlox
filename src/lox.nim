@@ -1,4 +1,4 @@
-import os, strutils, lexer, token, expression, parser, interpreter, utils, loxerror, typetraits
+import os, strutils, lexer, token, expr, parser, interpreter, utils, loxerror, typetraits
 
 # Start scanning lox source code
 proc exec(source: string) =
