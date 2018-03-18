@@ -5,6 +5,7 @@
 nimcache
 
 bin/*
+.vscode/
 
 tests/nimcache
 tests/nimbleDir
